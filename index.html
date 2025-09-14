@@ -9,7 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
     <style>
         body { font-family: sans-serif; background: linear-gradient(to right, #ffafbd, #ffc3a0); }
-        #chatContainer { display: none; }
+        #chatContainer { display: none; height: 100vh; flex-direction: column; }
+        #chatBox { flex: 1 1 auto; overflow-y: auto; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ccc; border-radius: 0.5rem; background: #fff1f2; }
         .chat-message { margin: 8px 0; padding: 8px 12px; border-radius: 12px; position: relative; max-width: 75%; }
         .user { background-color: #fce4ec; color: #880e4f; align-self: flex-end; }
         .gf { background-color: #f3e5f5; color: #4a148c; align-self: flex-start; }
@@ -17,7 +18,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .heart { position: absolute; top: -12px; right: 8px; font-size: 18px; color: red; animation: heartbeat 1.5s infinite; }
         @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-        #messageInput { resize: none; overflow: hidden; min-height: 2.5rem; max-height: 10rem; }
+        #messageInput { resize: none; overflow: hidden; min-height: 2.5rem; max-height: 10rem; width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 0.5rem; }
         #emojiPicker { max-height: 150px; overflow-y: auto; }
         .calculator-button { transition: transform 0.1s; }
         .calculator-button:hover { transform: scale(1.05); }
@@ -25,6 +26,8 @@
             .container { padding: 0.5rem; }
             #calcDisplay { font-size: 1.5rem; padding: 0.75rem; }
             .calculator-button { padding: 1rem; font-size: 1.25rem; }
+            #chatContainer { height: calc(100vh - 2rem); }
+            #chatBox { max-height: calc(100vh - 12rem); }
         }
     </style>
 </head>
@@ -57,7 +60,7 @@
             </div>
         </div>
         <!-- Secret Chat UI -->
-        <div id="chatContainer" class="flex flex-col h-[450px]">
+        <div id="chatContainer" class="flex flex-col">
             <h1 class="text-xl font-bold mb-3 text-center text-pink-600">Secret Chat 💕</h1>
             <div id="chatBox" class="flex-1 overflow-y-auto mb-2 p-2 border rounded bg-pink-50"></div>
             <textarea id="messageInput" class="w-full p-2 border rounded mb-2 text-sm" placeholder="Type your message..." oninput="autoResize.call(this)"></textarea>
@@ -241,7 +244,7 @@
                 <button onclick="toggleEmojiPicker()" class="bg-yellow-500 text-white p-2 rounded">😊</button>
             </div>
             <div class="flex gap-2">
-                <button onclick="sendMessage('user')" class="flex-1 bg-pink-500 text-white p-2 rounded">Send as pottan</button>
+                <button onclick="sendMessage('user')" class="flex-1 bg-pink-500 text-white p-2 rounded">Send as Pottan</button>
                 <button onclick="sendMessage('gf')" class="flex-1 bg-purple-500 text-white p-2 rounded">Send as AD</button>
                 <button onclick="clearChat()" class="flex-1 bg-red-500 text-white p-2 rounded">Clear Chat</button>
             </div>
@@ -316,6 +319,7 @@
                 });
                 document.getElementById('messageInput').value = '';
                 autoResize.call(document.getElementById('messageInput'));
+                document.getElementById('messageInput').blur(); // Dismiss keyboard
             }
         }
 
@@ -326,7 +330,7 @@
                 const msg = snapshot.val();
                 const div = document.createElement('div');
                 div.className = `chat-message ${msg.sender} fade-in`;
-                div.innerHTML = `${msg.text} <span class="heart">❤</span>`;
+                div.innerHTML =` ${msg.text} <span class="heart">❤</span>`;
                 chatBox.appendChild(div);
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
@@ -336,6 +340,16 @@
             db.ref("messages").remove();
             document.getElementById('chatBox').innerHTML = '';
         }
+
+        // Prevent scrolling when focusing on the input
+        document.getElementById('messageInput')?.addEventListener('focus', () => {
+            window.scrollTo(0, 0);
+            document.body.style.overflow = 'hidden';
+        });
+
+        document.getElementById('messageInput')?.addEventListener('blur', () => {
+            document.body.style.overflow = 'auto';
+        });
     </script>
 </body>
 </html>
